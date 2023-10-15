@@ -62,29 +62,35 @@ readXlsxFile("./label.xlsx").then((rows) => {
 app.post('/search', function (req, res) {
     var length = req.body.length;
     var values = req.body;
-    
+    console.log('검색어: ' + values);
+
     // 검색된 모든 이미지 URL을 저장할 배열
     var allImageURLs = [];
 
+    // 모든 검색어에 대한 조건을 AND 연산으로 조합
+    var conditions = [];
     for (var i = 0; i < length; i++) {
-        var sql = 'SELECT image_url FROM images WHERE tags LIKE ?';
-        var value = ['%' + values[i] + '%'];
-        connection.query(sql, value, function (error, results) {
-            if (error) {
-                console.error('SQL error: ' + error.message);
-                return;
-            }
-            // 한 번의 쿼리 결과를 allImageURLs 배열에 추가
-            allImageURLs.push(results);
-
-            // 모든 쿼리가 완료되면 한 번에 응답을 보냅니다.
-            if (allImageURLs.length === length) {
-                res.send(allImageURLs);
-                console.log('검색 결과: ' + JSON.stringify(allImageURLs));
-            }
-        });
+        conditions.push('tags LIKE ?');
     }
+
+    // 모든 조건을 AND 연산으로 결합하여 쿼리 생성
+    var sql = 'SELECT image_url FROM images WHERE ' + conditions.join(' AND ');
+
+    // 각 검색어에 대한 값 배열 구성
+    var valuesArray = values.map(function (value) {
+        return '%' + value + '%';
+    });
+
+    connection.query(sql, valuesArray, function (error, results) {
+        if (error) {
+            console.error('SQL error: ' + error.message);
+            return;
+        }
+        res.send(results);
+        console.log('########################검색 결과#################### :' + JSON.stringify(results));
+    });
 });
+
 
 
 // 서버 실행

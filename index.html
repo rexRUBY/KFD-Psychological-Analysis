@@ -39,6 +39,7 @@
 						for (var i = 0; i < data.length; i++) {
 							var imageElement = $("<img>");
 							imageElement.attr("src", data[i].image_url);
+							console.log(data[i].image_url);
 							imageElement.css("width", "500px"); // 이미지의 너비 설정
 							imageContainer.append(imageElement);
 						}
