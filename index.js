@@ -17,7 +17,7 @@ app.use(bodyParser.urlencoded({ extended: false })); // URL-encoded 데이터를
 // DB 연결
 var connection = mysql.createConnection({
     host: 'svc.sel5.cloudtype.app',
-    port: 32441,
+    port: 30942,
     user: 'root',
     password: 'dlsrhdwlsmd00!',
     database: 'kfd_db'
