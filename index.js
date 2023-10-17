@@ -16,10 +16,10 @@ app.use(bodyParser.urlencoded({ extended: false })); // URL-encoded 데이터를
 
 // DB 연결
 var connection = database.createConnection({
-    host: 'svc.sel5.cloudtype.app',
+    host: '-----------',
     port: 30376,
     user: 'root',
-    password: 'dlsrhdwlsmd00!',
+    password: '----------',
     database: 'kfd_db'
   });
 //svc.sel5.cloudtype.app:30376
