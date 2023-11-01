@@ -34,7 +34,9 @@ connection.connect(function (err) {
     }
 });
 
+
 // 엑셀에 저장된 데이터 DB에 삽입
+/*
 var url = '';
 var tag = '';
 var idx = 0;
@@ -57,6 +59,8 @@ readXlsxFile("./label.xlsx").then((rows) => {
         }
     }
 });
+*/
+
 
 // index.html에서 받은 데이터 DB에서 검색
 app.post('/search', function (req, res) {
