@@ -21,7 +21,7 @@ var connection = database.createConnection({
     user: 'root',
     password: '----------',
     database: 'kfd_db'
-  });
+});
 //svc.sel5.cloudtype.app:30376
 // DB 연결 확인
 connection.connect(function (err) {
@@ -36,30 +36,7 @@ connection.connect(function (err) {
 
 
 // 엑셀에 저장된 데이터 DB에 삽입
-/*
-var url = '';
-var tag = '';
-var idx = 0;
-readXlsxFile("./label.xlsx").then((rows) => {
-    for (let i = idx; i < rows.length; i++) {
-        if (i !== 0) {
-            url = rows[i][1];
-            tag = rows[i][2];
-            // DB에 데이터 삽입
-            var sql = 'INSERT INTO images (image_url, tags) VALUES (?, ?)';
-            var values = [url, tag];
-            connection.query(sql, values, function (error) {
-                if (error) {
-                    console.error('SQL error: ' + error.message);
-                    return;
-                }
-                console.log('Data inserted successfully');
-            });
-            idx++;
-        }
-    }
-});
-*/
+//
 
 
 // index.html에서 받은 데이터 DB에서 검색
@@ -102,3 +79,30 @@ const port = 3000; // 포트 설정
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
+
+//엑셀데이터 저장
+function insertExcelData() {
+    var url = '';
+    var tag = '';
+    var idx = 0;
+    readXlsxFile("./label.xlsx").then((rows) => {
+        for (let i = idx; i < rows.length; i++) {
+            if (i !== 0) {
+                url = rows[i][1];
+                tag = rows[i][2];
+                // DB에 데이터 삽입
+                var sql = 'INSERT INTO images (image_url, tags) VALUES (?, ?)';
+                var values = [url, tag];
+                connection.query(sql, values, function (error) {
+                    if (error) {
+                        console.error('SQL error: ' + error.message);
+                        return;
+                    }
+                    console.log('Data inserted successfully');
+                });
+                idx++;
+            }
+        }
+    });
+}
