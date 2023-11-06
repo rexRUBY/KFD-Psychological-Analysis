@@ -13,4 +13,16 @@ keywords = kw_model.extract_keywords(text, keyphrase_ngram_range=(1, 1), stop_wo
 keywords
 
 kiwi = Kiwi()
-print(kiwi.analyze(text), end='\n')
+#print(kiwi.analyze(text))
+
+# 명사 추출 함수
+def noun_extractor(text):
+    results = []
+    result = kiwi.analyze(text)
+    for token, pos, _, _ in result[0][0]:
+        if len(token) != 1 and pos.startswith('N') or pos.startswith('SL'):
+            results.append(token)
+    return results
+
+nouns = noun_extractor(text)
+print(nouns)    
