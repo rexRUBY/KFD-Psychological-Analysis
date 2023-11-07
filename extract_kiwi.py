@@ -1,28 +1,23 @@
-from keybert import KeyBERT
+from kiwipiepy.utils import Stopwords
 from kiwipiepy import Kiwi
-from transformers import BertModel
+import sys
+import os
 
-
-text="""
-3인 가족 엄마 아빠와 책을 읽고있는 5살짜리 앉아있는 남자아이
-어질러진 거실  
-"""
-model = BertModel.from_pretrained('skt/kobert-base-v1')
-kw_model = KeyBERT(model)
-keywords = kw_model.extract_keywords(text, keyphrase_ngram_range=(1, 1), stop_words=None, top_n=10)
-keywords
+# text="""
+# 즐거운 표정의 3인 가정 엄마와 아빠는 앉아있고 5살짜리 남자아이는 앉아서 책을 읽고 있다.
+# """
 
 kiwi = Kiwi()
-#print(kiwi.analyze(text))
 
-# 명사 추출 함수
-def noun_extractor(text):
-    results = []
+
+# 추출 함수
+def extractor(text):
+    results = ""
     result = kiwi.analyze(text)
     for token, pos, _, _ in result[0][0]:
-        if len(token) != 1 and pos.startswith('N') or pos.startswith('SL'):
-            results.append(token)
+        if len(token) != 1 and pos.startswith('N') or pos.startswith('VV') or pos.startswith('VN') or pos.startswith('VA') or pos.startswith('SN') or pos.startswith('SL') or pos.startswith('XR'):
+            results += token + " "
     return results
 
-nouns = noun_extractor(text)
-print(nouns)    
+if __name__ == '__main__':
+     print(extractor(sys.argv[1]))
