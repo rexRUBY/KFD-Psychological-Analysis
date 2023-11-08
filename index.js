@@ -7,40 +7,6 @@ const iconv = require('iconv-lite');
 const app = express();
 
 
-/*
-//파이썬 쉘 설정
-const { PythonShell } = require('python-shell');
-const pythonPath = 'C:/Users/ye_20/AppData/Local/Programs/Python/Python312/python.exe';
-const etrPath = 'D:/KFD-Psychological-Analysis'; // 스크립트 파일이 있는 디렉토리
-const etrFile = 'extract_kiwi.py'; // 스크립트 파일의 이름
-const text = '5살짜리 아이 엄마와 함께 있는';
-
-let options = {
-    mode: 'text',
-    pythonPath: pythonPath,
-    pythonOptions: ['-u'],
-    scriptPath: etrPath,
-    args: [text],
-    encoding: 'utf8'
-};
-
-PythonShell.run(etrFile, options, function (err, results) {
-    console.log('실행중...');    
-    if (err) {
-        console.error(`[${user_id}] [${uuid}] : ERROR : ${err}`);
-        return;
-    }
-    let data = results[0].replace(`b'`, '').replace(`'`, '');
-    let buff = Buffer.from(data, 'base64');
-    let text = buff.toString('utf-8');
-    console.log('text:', text);
-
-    // 여기에서 text 변수를 사용하여 결과 처리
-    handlePythonResult(text);
-});
-*/
-
-
 
 // 정적 파일 제공
 const path = require('path');
@@ -83,14 +49,15 @@ connection.connect(function (err) {
 app.post('/search', function (req, res) {
     var length = req.body.length;
     var values = req.body;
-    console.log('검색어: ' + values);
+    //values = runScript(values);
+    console.log('###########검색어############ : ' + values);
 
     // 검색된 모든 이미지 URL을 저장할 배열
     var allImageURLs = [];
 
     // 모든 검색어에 대한 조건을 AND 연산으로 조합
     var conditions = [];
-    for (var i = 0; i < length; i++) {
+    for (var i = 0; i < values.length; i++) {
         conditions.push('tags LIKE ?');
     }
 
@@ -102,15 +69,19 @@ app.post('/search', function (req, res) {
         return '%' + value + '%';
     });
 
+    // 로그에 쿼리 출력
+    console.log('#########실행된 쿼리######### : ' + sql);
+
     connection.query(sql, valuesArray, function (error, results) {
         if (error) {
             console.error('SQL error: ' + error.message);
             return;
         }
         res.send(results);
-        console.log('########################검색 결과#################### :' + JSON.stringify(results));
+        console.log('##########검색 결과########## :' + JSON.stringify(results));
     });
 });
+
 
 
 // 서버 실행
