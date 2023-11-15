@@ -15,9 +15,14 @@ def extractor(text):
     results = ""
     result = kiwi.analyze(text)
     for token, pos, _, _ in result[0][0]:
-        if len(token) != 1 and pos.startswith('N') or pos.startswith('VV') or pos.startswith('VN') or pos.startswith('VA') or pos.startswith('SN') or pos.startswith('SL') or pos.startswith('XR'):
+        if len(token) != 1 and pos.startswith('N') or pos.startswith('VV') or pos.startswith('VN') or pos.startswith('VA') or pos.startswith('SN') or pos.startswith('SL') or pos.startswith('XR') or pos.startswith('MA') or pos.startswith('XPN'):
             results += token + " "
+    #중복되는 단어 제거
+    results = list(set(results.split()))
+    results = " ".join(results)
     return results
 
 if __name__ == '__main__':
      print(extractor(sys.argv[1]))
+# text =''
+# print(extractor(text))
