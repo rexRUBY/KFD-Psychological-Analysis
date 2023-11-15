@@ -43,7 +43,7 @@ app.post('/search', async function (req, res) {
         var valuesString = await runScript(req.body); // 프로미스 완료 대기
 
         // 추가된 로그
-        console.log('########## 반환된 데이터 ########## :' + valuesString);
+        console.log('####### 반환된 데이터 ####### :' + valuesString);
 
         // 문자열을 공백으로 나누어 배열로 변환
         var valuesArray = valuesString.split(/\s+/);
@@ -92,13 +92,20 @@ app.post('/search', async function (req, res) {
         // 검색어 배열이 비어 있지 않은 경우에만 SQL 쿼리 실행
         if (valuesArray.length > 0) {
             // SQL 쿼리 실행
-            connection.query(sql, valuesArray, function (error, results) {
+            connection.query(sql, uniqueValuesArray, function (error, results) {
                 if (error) {
                     console.error('SQL error: ' + error.message);
                     res.status(500).send('Internal Server Error');
                     return;
                 }
-                console.log('##########검색 결과########## :' + JSON.stringify(results) + results);
+                // 검색된 모든 이미지 URL을 저장
+                for (let i = 0; i < results.length; i++) {
+                    allImageURLs.push(results[i].image_url);
+                }
+                // 콘솔에 출력
+                console.log('##########검색 결과########## :' + allImageURLs);
+
+                // console.log('##########검색 결과########## :' + results);
                 res.send(results);
             });
         }
