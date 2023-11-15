@@ -46,43 +46,56 @@ connection.connect(function (err) {
 
 
 // index.html에서 받은 데이터 DB에서 검색
-app.post('/search', function (req, res) {
-    var length = req.body.length;
-    var values = req.body;
-    //values = runScript(values);
-    console.log('###########검색어############ : ' + values);
+app.post('/search', async function (req, res) {
+    try {
+        var values = await runScript(req.body); // 프로미스 완료 대기
+        console.log('###########검색어############ : ' + values);
 
-    // 검색된 모든 이미지 URL을 저장할 배열
-    var allImageURLs = [];
+        // 검색된 모든 이미지 URL을 저장할 배열
+        var allImageURLs = [];
 
-    // 모든 검색어에 대한 조건을 AND 연산으로 조합
-    var conditions = [];
-    for (var i = 0; i < values.length; i++) {
-        conditions.push('tags LIKE ?');
-    }
+        // 모든 검색어에 대한 조건을 AND 연산으로 조합
+        var conditions = [];
+        var searchTerms = values.split(' '); // 공백으로 구분된 검색어를 배열로 분리
 
-    // 모든 조건을 AND 연산으로 결합하여 쿼리 생성
-    var sql = 'SELECT image_url FROM images WHERE ' + conditions.join(' AND ');
-
-    // 각 검색어에 대한 값 배열 구성
-    var valuesArray = values.map(function (value) {
-        return '%' + value + '%';
-    });
-
-    // 로그에 쿼리 출력
-    console.log('#########실행된 쿼리######### : ' + sql);
-
-    connection.query(sql, valuesArray, function (error, results) {
-        if (error) {
-            console.error('SQL error: ' + error.message);
-            return;
+        for (var i = 0; i < searchTerms.length; i++) {
+            conditions.push('tags LIKE ?');
         }
-        res.send(results);
-        console.log('##########검색 결과########## :' + JSON.stringify(results));
-    });
+
+        // 모든 조건을 AND 연산으로 결합하여 쿼리 생성
+        var sql = 'SELECT image_url FROM images WHERE ' + conditions.join(' AND ');
+
+        // 각 검색어에 대한 값 배열 구성
+        var valuesArray = searchTerms.map(function (term) {
+            return '%' + term + '%';
+        });
+
+        // '%\r\n%' 값을 제외
+        valuesArray = valuesArray.filter(function (value) {
+            return value !== '%\r\n%';
+        });
+
+        console.log(valuesArray);
+
+        // SQL 쿼리 생성
+        sql = 'SELECT image_url FROM images WHERE ' + conditions.join(' AND ');
+
+        // 로그에 쿼리 출력
+        console.log('#########실행된 쿼리######### : ' + sql);
+
+        // SQL 쿼리 실행
+        connection.query(sql, valuesArray, function (error, results) {
+            if (error) {
+                console.error('SQL error: ' + error.message);
+                return;
+            }
+            res.send(results);
+            console.log('##########검색 결과########## :' + JSON.stringify(results));
+        });
+    } catch (error) {
+        console.error('Error: ' + error.message);
+    }
 });
-
-
 
 // 서버 실행
 const port = 3000; // 포트 설정
