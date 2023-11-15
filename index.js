@@ -6,19 +6,16 @@ const spawn = require('child_process').spawn;
 const iconv = require('iconv-lite');
 const app = express();
 
-
 // 정적 파일 제공
 const path = require('path');
 const publicDirectoryPath = path.join(__dirname, './');
 app.use(express.static(publicDirectoryPath));
-
 
 //insertExcelData(); // 엑셀 데이터 DB에 저장
 
 // body-parser 미들웨어 설정
 app.use(bodyParser.json()); // JSON 데이터를 파싱
 app.use(bodyParser.urlencoded({ extended: false })); // URL-encoded 데이터를 파싱
-
 
 // DB 연결
 var connection = database.createConnection({
@@ -28,7 +25,6 @@ var connection = database.createConnection({
     password: 'dlsrhdwlsmd00!',
     database: 'kfd_db'
 });
-
 
 // DB 연결 확인
 connection.connect(function (err) {
@@ -41,59 +37,60 @@ connection.connect(function (err) {
     }
 });
 
-
 // index.html에서 받은 데이터 DB에서 검색
 app.post('/search', async function (req, res) {
     try {
-        var values = await runScript(req.body); // 프로미스 완료 대기
+        var valuesString = await runScript(req.body); // 프로미스 완료 대기
+
+        // 추가된 로그
+        console.log('########## 반환된 데이터 ########## :' + valuesString);
+
+        // 문자열을 공백으로 나누어 배열로 변환
+        var valuesArray = valuesString.split(/\s+/);
 
         // 검색된 모든 이미지 URL을 저장할 배열
         var allImageURLs = [];
 
         // 검색어 배열이 비어 있는지 확인
-        if (values.length === 0) {
+        if (!Array.isArray(valuesArray) || valuesArray.length === 0) {
             // 적절한 처리를 추가 (예: 오류 메시지를 클라이언트에 반환)
-            res.status(400).send('No search terms provided.');
+            res.status(400).send('Invalid search terms provided.');
             return;
         }
 
-        // 모든 검색어에 대한 조건을 AND 연산으로 조합
-        var conditions = [];
-        var searchTerms = values.split(' '); // 공백으로 구분된 검색어를 배열로 분리
+        // 각 검색어에 대한 조건을 AND 연산으로 조합
+        var conditions = valuesArray
+            .filter(function (term) {
+                return term.trim() !== ''; // 빈 문자열 필터링
+            })
+            .map(function (term) {
+                return 'tags LIKE ?';
+            });
 
-        // 각 검색어에 대한 값 배열 구성
-        var valuesArray = searchTerms.map(function (term) {
-            return '%' + term + '%';
-        });
-
-        //중복되는 값 제거
-        valuesArray = valuesArray.filter(function (item, pos) {
-            return valuesArray.indexOf(item) === pos;
-        });
+        // 중복되는 값 제거
+        var uniqueValuesArray = [...new Set(valuesArray)];
 
         // '%\r\n%' 값을 제외
-        valuesArray = valuesArray.filter(function (value) {
-            return value !== '%\r\n%';
+        uniqueValuesArray = uniqueValuesArray.filter(function (value) {
+            return value.trim() !== '%\r\n%';
         });
-        
-        for (var i = 0; i < valuesArray.length; i++) {
-            conditions.push('tags LIKE ?');
-        }
+
+        // 각 검색어에 '%' 추가
+        uniqueValuesArray = uniqueValuesArray.map(function (value) {
+            return '%' + value + '%';
+        });
 
         // 모든 조건을 AND 연산으로 결합하여 쿼리 생성
         var sql = 'SELECT image_url FROM images WHERE ' + conditions.join(' AND ');
 
-        console.log('###########검색어############ : ' + valuesArray + '\n검색어 갯수 : '+ valuesArray.length);
+        console.log('###########검색어############ : ' + uniqueValuesArray);
 
         // 로그에 쿼리 출력
-        console.log('#########실행된 쿼리######### : ' + sql);
+        console.log('#########실행된 쿼리######### : ' + connection.format(sql, uniqueValuesArray));
+
 
         // 검색어 배열이 비어 있지 않은 경우에만 SQL 쿼리 실행
         if (valuesArray.length > 0) {
-            // Replace placeholders in the SQL query with actual values
-            sql = sql.replace(/tags LIKE \?/g, 'tags LIKE ? AND');
-            sql = sql.slice(0, -4); // Remove the trailing ' AND'
-
             // SQL 쿼리 실행
             connection.query(sql, valuesArray, function (error, results) {
                 if (error) {
@@ -101,8 +98,8 @@ app.post('/search', async function (req, res) {
                     res.status(500).send('Internal Server Error');
                     return;
                 }
+                console.log('##########검색 결과########## :' + JSON.stringify(results) + results);
                 res.send(results);
-                console.log('##########검색 결과########## :' + JSON.stringify(results));
             });
         }
     } catch (error) {
@@ -111,21 +108,18 @@ app.post('/search', async function (req, res) {
     }
 });
 
-
-
 // 서버 실행
 const port = 3000; // 포트 설정
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
-
-//엑셀데이터 저장
+// 엑셀데이터 저장
 function insertExcelData() {
     var url = '';
     var tag = '';
     var idx = 0;
-    readXlsxFile("./label.xlsx").then((rows) => {
+    readXlsxFile("./label(2).xlsx").then((rows) => {
         for (let i = idx; i < rows.length; i++) {
             if (i !== 0) {
                 url = rows[i][1];
@@ -146,8 +140,7 @@ function insertExcelData() {
     });
 }
 
-
-//파이썬 스크립트 실행
+// 파이썬 스크립트 실행
 function runScript(text) {
     return new Promise((resolve, reject) => {
         const result = spawn('python', ['extract_kiwi.py', text]);
