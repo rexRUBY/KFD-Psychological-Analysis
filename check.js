@@ -124,7 +124,7 @@ function insertExcelData() {
     var url = '';
     var tag = '';
     var idx = 0;
-    readXlsxFile("./label(2).xlsx").then((rows) => {
+    readXlsxFile("./label.xlsx").then((rows) => {
         for (let i = idx; i < rows.length; i++) {
             if (i !== 0) {
                 url = rows[i][1];
@@ -142,32 +142,5 @@ function insertExcelData() {
                 idx++;
             }
         }
-    });
-}
-
-// 파이썬 스크립트 실행
-function runScript(text) {
-    return new Promise((resolve, reject) => {
-        const result = spawn('python', ['extract_kiwi.py', text]);
-        let output = '';
-
-        result.stdout.on('data', function (data) {
-            data = iconv.decode(data, 'euc-kr');
-            console.log(data.toString());
-            output += data.toString();
-        });
-
-        result.stderr.on('data', function (data) {
-            data = iconv.decode(data, 'euc-kr');
-            console.log(data.toString());
-        });
-
-        result.on('close', (code) => {
-            if (code === 0) {
-                resolve(output);
-            } else {
-                reject(`Python script exited with code ${code}`);
-            }
-        });
     });
 }
