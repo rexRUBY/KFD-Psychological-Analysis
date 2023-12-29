@@ -57,6 +57,54 @@
 				}
 			});
 		});
+
+
+		//셀렉트박스 기반
+		function select() {
+			var select1 = document.getElementById("select1"); //인원
+			var select2 = document.getElementById("select2"); //(옷)생상
+			var select3 = document.getElementById("select3"); //(옷)종류
+			var select4 = document.getElementById("select4"); //장소
+			var select5 = document.getElementById("select5"); //행동
+			var select6 = document.getElementById("select6"); //부모관계
+			var select7 = document.getElementById("select7"); //자식관계
+			var select8 = document.getElementById("select8"); //표정
+
+			//배열 생성
+			var arr = new Array();
+			for (var i = 1; i <= 8; i++) {
+				var num = 'select' + i;
+				arr[i - 1] = document.getElementById(num).value; // 올바른 변수명 및 값 가져오기
+				console.log(arr[i - 1]);
+			}
+
+
+			var jsonString = JSON.stringify(arr);
+
+			fetch("/select", {
+				method: "POST",
+				body: jsonString,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					// 데이터의 갯수만큼 이미지를 추가합니다.
+					for (var i = 0; i < data.length; i++) {
+						var imageElement = $("<img>");
+						imageElement.attr("src", data[i].image_url);
+						console.log(data[i].image_url);
+						imageElement.css("width", "500px"); // 이미지의 너비 설정
+						imageContainer.append(imageElement);
+					}
+
+					console.log(data.length);
+				})
+				.catch((error) => {
+					console.error("Error: " + error);
+				});
+		}
 	</script>
 </head>
 
@@ -67,50 +115,6 @@
 				<input type="text" id="searchInput" placeholder="태그를 입력하세요 (복수선택 시 띄어쓰기 필수)">
 				<i id="searchIcon" class="fas fa-search"></i>
 			</div>
-		</div>
-		<div>
-			<!-- 인원 -->
-			<select name="select" id="select1" style="width: 150px; height: 30px;">
-				<option value="" disabled selected>인원</option>
-				<option value="1인">1인</option>
-				<option value="2인">2인</option>
-			</select>
-			<!-- 옷차림 -->
-			<P style="margin-bottom: 10px; margin-top: 10px;">옷차림</P>
-			<select name="select" id="select2" style="width: 150px; height: 30px;">
-				<option value="" disabled selected>색상</option>
-				<option value="흰색">흰색</option>
-				<option value="검은색">검은색</option>
-				<option value="파란색">파란색</option>
-				<option value="보라색">보라색</option>
-			</select>
-			<select name="select" id="select3" style="width: 150px; height: 30px;">
-				<option value="" disabled selected>종류</option>
-				<option value="티셔츠">티셔츠</option>
-				<option value="잠옷">잠옷</option>
-			</select>
-			<!-- 장소 -->
-			<select name="select" id="select4" style="width: 150px; height: 30px;">
-				<option value="" disabled selected>장소</option>
-				<option value="들판">들판</option>
-				<option value="거실">거실</option>
-				<option value="화장실">화장실</option>
-			</select>
-			<!-- 장소 -->
-			<select name="select" id="select4" style="width: 150px; height: 30px;">
-				<option value="" disabled selected>행동</option>
-				<option value="소풍">소풍</option>
-				<option value="책읽기">책읽기</option>
-				<option value="씻기">씻기</option>
-			</select>
-			<!-- 부모 -->
-			<P style="margin-bottom: 10px; margin-top: 10px;">부모</P>
-			<select name="select" id="select2" style="width: 150px; height: 30px;">
-				<option value="" disabled selected>관계</option>
-				<option value="엄마">엄마</option>
-				<option value="아빠">아빠</option>
-				<option value="엄마 아빠">둘다</option>
-			</select>
 		</div>
 	</center>
 </body>

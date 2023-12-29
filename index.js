@@ -5,26 +5,51 @@ const readXlsxFile = require('read-excel-file/node');
 const spawn = require('child_process').spawn;
 const iconv = require('iconv-lite');
 const app = express();
+const multer = require('multer');
+const path = require('path');
+require("dotenv").config();
 
 // 정적 파일 제공
-const path = require('path');
 const publicDirectoryPath = path.join(__dirname, './');
 app.use(express.static(publicDirectoryPath));
 
 //insertExcelData(); // 엑셀 데이터 DB에 저장
 
+
+const request = require('request');
+
 // body-parser 미들웨어 설정
 app.use(bodyParser.json()); // JSON 데이터를 파싱
 app.use(bodyParser.urlencoded({ extended: false })); // URL-encoded 데이터를 파싱
 
+
+
+app.post('/results', async function (req, res) {
+    try {
+        const results = req.body.results;
+        console.log('결과 수신됨:', results);
+        // 결과를 처리하는 작업 수행
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ message: '결과가 성공적으로 수신되었습니다.' });
+    } catch (error) {
+        console.error('Error: ' + error.message);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
+
 // DB 연결
 var connection = database.createConnection({
-    host: 'svc.sel5.cloudtype.app',
-    port: 30376,
-    user: 'root',
-    password: 'dlsrhdwlsmd00!',
-    database: 'kfd_db'
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    user: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: 'kfd',
+    waitForConnections: true
 });
+
 
 // DB 연결 확인
 connection.connect(function (err) {
@@ -36,6 +61,29 @@ connection.connect(function (err) {
         console.log("DB connected");
     }
 });
+
+
+
+// Multer 설정
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'img/'); // 파일을 저장할 폴더 지정
+    },
+    filename: function (req, file, cb) {
+        // 파일명 중복을 피하기 위해 현재 시간을 사용하여 파일명 생성
+        cb(null, `${Date.now()}_${file.originalname}`);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+// 이미지 업로드 처리
+app.post('/upload', upload.single('image'), (req, res) => {
+    res.send('이미지 업로드 완료!');
+});
+
+
+
 
 // index.html에서 받은 데이터 DB에서 검색
 app.post('/search', async function (req, res) {
@@ -113,11 +161,57 @@ app.post('/search', async function (req, res) {
     }
 });
 
+
+//######################################################
+app.post('/select', async function (req, res) {
+    console.log(req.body);
+    var person = req.body.person;
+    if (person == 2) {
+        var one = req.body.one;
+        var two = req.body.two;
+        var role1 = req.body.role1;
+        var role2 = req.body.role2;
+        console.log(one + " " + two);
+        var sql = "SELECT * FROM select_images WHERE '" + role1 + "'LIKE '" + one + "' AND '" + role2 + "'LIKE '" + two + "' OR '" + role1 + "'LIKE '" + two + "' AND '" + role2 + "'LIKE '" + one + "'";
+        console.log(sql);
+    }
+    else if (person == 3) {
+        var role1 = req.body.role1;
+        var role2 = req.body.role2;
+        var role3 = req.body.role3;
+        var one = req.body.one;
+        var two = req.body.two;
+        var three = req.body.three;
+
+        var sql = "SELECT * FROM select_images WHERE '" + role1 + "'LIKE '" + one + "' AND '" + role2 + "'LIKE '" + two + "' AND '" + role3 + "'LIKE '" + three + "'";
+        console.log(sql);
+
+        // 쿼리 실행
+        connection.query(sql, function (error, results) {
+            if (error) {
+                console.error('SQL error: ' + error.message);
+                res.status(500).send('Internal Server Error');
+                return;
+            }
+
+            // 콘솔에 출력
+            console.log('##########검색 결과########## :', results);
+            res.send(results);
+        });
+    }
+    else if (person == 4) {
+
+    }
+});
+//#######################################################
+
+
 // 서버 실행
 const port = 3000; // 포트 설정
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
 
 // 엑셀데이터 저장
 function insertExcelData() {
@@ -144,6 +238,7 @@ function insertExcelData() {
         }
     });
 }
+
 
 // 파이썬 스크립트 실행
 function runScript(text) {
