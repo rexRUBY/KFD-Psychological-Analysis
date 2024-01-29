@@ -18,19 +18,27 @@ app.use(express.static(publicDirectoryPath));
 
 const request = require('request');
 
+
+//스파게티 코드~~ ㅎㅎ
 // body-parser 미들웨어 설정
 app.use(bodyParser.json()); // JSON 데이터를 파싱
 app.use(bodyParser.urlencoded({ extended: false })); // URL-encoded 데이터를 파싱
-
+//app.use(bodyParser.text()); // 텍스트 데이터를 파싱
 
 
 app.post('/results', async function (req, res) {
     try {
-        const results = req.body.results;
-        console.log('결과 수신됨:', results);
-        // 결과를 처리하는 작업 수행
-        res.setHeader('Content-Type', 'application/json');
-        res.json({ message: '결과가 성공적으로 수신되었습니다.' });
+        const request = req.body;
+        var results = [];
+        for(var i = 0; i < request.length; i++){
+            if(request[i] == '' || request[i] == ' ') 
+                results[i] = ' ';
+            else {
+                results[i] = await transfer(request[i]);
+                results[i] = results[i].replace(/(\r\n|\n|\r)/gm, "");
+            }
+        }
+        res.send(results);
     } catch (error) {
         console.error('Error: ' + error.message);
         res.status(500).send('Internal Server Error');
@@ -38,8 +46,7 @@ app.post('/results', async function (req, res) {
 });
 
 
-
-
+/*
 // DB 연결
 var connection = database.createConnection({
     host: process.env.DATABASE_HOST,
@@ -61,6 +68,7 @@ connection.connect(function (err) {
         console.log("DB connected");
     }
 });
+*/
 
 
 
@@ -162,6 +170,13 @@ app.post('/search', async function (req, res) {
 });
 
 
+app.post('/translate', async function (req, res) {
+    console.log(req.body);
+    var result = await  transfer(req.body);
+    console.log(result);
+});
+
+
 //######################################################
 app.post('/select', async function (req, res) {
     console.log(req.body);
@@ -213,6 +228,7 @@ app.listen(port, () => {
 });
 
 
+
 // 엑셀데이터 저장
 function insertExcelData() {
     var url = '';
@@ -244,6 +260,33 @@ function insertExcelData() {
 function runScript(text) {
     return new Promise((resolve, reject) => {
         const result = spawn('python', ['extract_kiwi.py', text]);
+        let output = '';
+
+        result.stdout.on('data', function (data) {
+            data = iconv.decode(data, 'euc-kr');
+            console.log(data.toString());
+            output += data.toString();
+        });
+
+        result.stderr.on('data', function (data) {
+            data = iconv.decode(data, 'euc-kr');
+            console.log(data.toString());
+        });
+
+        result.on('close', (code) => {
+            if (code === 0) {
+                resolve(output);
+            } else {
+                reject(`Python script exited with code ${code}`);
+            }
+        });
+    });
+}
+
+
+function transfer(text) {
+    return new Promise((resolve, reject) => {
+        const result = spawn('python', ['translation.py', text]);
         let output = '';
 
         result.stdout.on('data', function (data) {

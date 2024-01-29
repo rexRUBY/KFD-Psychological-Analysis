@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <title>프롬프트 생성기</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <style>
+        .inline-element {
+            display: inline-block;
+        }
+
+        select {
+            width: 80px;
+            text-align: center;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <h3>공통속성</h3>
+    <p class="inline-element">장소</p>
+    <select id="background" class="inline-element">
+        <option></option>
+        <option value="forest">숲</option>
+        <option value="meadow">들판</option>
+        <option value="living-room">거실</option>
+        <option value="bathroom">욕실</option>
+        <option value="bedroom">침실</option>
+        <option value="beach">해변</option>
+        <option value="mountain">산</option>
+    </select>
+    <br>
+    <p class="inline-element">인원</p>
+    <select id="person" class="inline-element" onchange="changeLangSelect()">
+        <option></option>
+        <option value="2">2인</option>
+        <option value="3">3인</option>
+        <option value="4">4인</option>
+        <option value="5">5인</option>
+    </select>
+    <br><br><br>
+
+    <h3 id="personal">개별속성</h3>
+    <div id="here"></div>
+    <button onclick="func()">선택완료</button>
+    <br><br>
+    <div id="result"></div>
+
+    <textarea id="myTextarea" style="width: 500px; height: 100px;"></textarea>
+    <button id="myButton">복사</button>
+
+    <script>
+        var cnt = 1;
+
+        function changeLangSelect() {
+            cnt = 1; // 초기화
+            $("#here").empty();
+            var person = $("#person").val();
+            var html = '';
+            for (var i = 0; i < person; i++) {
+                html += `<p class="inline-element">역할</p>
+    <select id="role${cnt}" class="inline-element">
+        <option></option>
+        <option value="woman">여성</option>
+        <option value="man">남성</option>
+        <option value="boy">남자아이</option>
+        <option value="girl">여자아이</option>
+    </select> &nbsp;&nbsp;
+    <p class="inline-element">나이대</p>
+    <select id="age${cnt}" class="inline-element">
+        <option></option>
+        <option value="5">5살</option>
+        <option value="10">10살</option>
+        <option value="15">15살</option>
+        <option value="30">30살</option>
+        <option value="40">40살</option>
+    </select> &nbsp;&nbsp;
+    <p class="inline-element">의상   색상</p>
+    <select id="color${cnt}" class="inline-element">
+    <option></option>
+    <option value="white">흰색</option>
+    <option value="black">검은색</option>
+    <option value="blue">파란색</option>
+    <option value="green">초록색</option>
+    <option value="purple">보라색</option>
+    <option value="sky blue">하늘색</option>
+    <option value="yellow">노란색</option>
+    <option value="red">빨간색</option>
+    <option value="pink">분홍색</option>
+    <option value="orange">주황색</option>
+    <option value="brown">갈색</option>
+    <option value="gray">회색</option>
+    <option value="olive">올리브색</option>
+    </select>&nbsp;&nbsp;
+
+    <p class="inline-element">종류</p>
+    <select id="clothes${cnt}" class="inline-element">
+    <option></option>
+    <option value="t-shirt">티셔츠</option>
+    <option value="dress">원피스</option>
+    <option value="pajamas">잠옷</option>
+    <option value="shower-gown">샤워가운</option>
+    <option value="jeans">청바지</option>
+    <option value="skirt">스커트</option>
+    <option value="shirt">셔츠</option>
+    <option value="jumper">점퍼</option>
+    <option value="jacket">자켓</option>
+    <option value="pants">바지</option>
+    <option value="knitwear">니트</option>
+    <option value="swimsuit">수영복</option>
+    </select>&nbsp;&nbsp;
+    <p class="inline-element">헤어스타일</p>
+    <select id="hair${cnt}" class="inline-element">
+    <option></option>
+    <option value="long-straight-hair">긴 생머리</option>
+    <option value="short-straight-hair">짧은 생머리</option>
+    <option value="long-curly-hair">긴 곱슬머리</option>
+    <option value="short-curly-hair">짧은 곱슬머리</option>
+    <option value="bob-hair">단발머리</option>
+    </select>&nbsp;&nbsp;
+    <p class="inline-element">행동</p>
+    <select id="behavior${cnt}" class="inline-element">
+        <option></option>
+        <option value="sitting">앉아있는</option>
+        <option value="reading-book">책을 읽는</option>
+        <option value="standing">서있는</option>
+        <option value="walking">걷는</option>
+        <option value="running">달리는</option>
+        <option value="eating">먹는</option>
+        <option value="drawing">그림 그리는</option>
+    </select> &nbsp;&nbsp;
+    <p class="inline-element">감정</p>
+    <select id="face${cnt}" class="inline-element">
+        <option></option>
+        <option value="smiling">웃고있는</option>
+        <option value="crying">울고있는</option>
+        <option value="neutral">무표정</option>
+        <option value="surprised">놀란</option>
+        <option value="angry">화난</option>
+        <option value="confused">혼란스러운</option>
+        <option value="happy">행복한</option>
+        <option value="sad">슬픈</option>
+        <option value="excited">흥분한</option>
+    </select>&nbsp;&nbsp;
+    <p class="inline-element">추가 옵션</p>
+    <input type="text" id="options${cnt}" style="width:200px;">&nbsp;&nbsp;
+    <p class="inline-element">강조하기</p>
+    <input type="checkbox" id="checkbox${cnt}" class="inline-element"></input>
+
+    <br><br>
+    `;
+
+                cnt++;
+            }
+            // personal 밑에 추가
+            $("#here").append(html);
+        }
+
+        function func() {
+            var options = [];
+            console.log("cnt" + cnt);
+            for (var i = 1; i <= cnt; i++) {
+
+                var id = "options" + i;
+                var element = document.getElementById(id);
+
+                if (element) {
+                    var option = element.value;
+                    if (option != "") {
+                        options.push(option);
+                    }
+                    else {
+                        options.push(" ");
+                    }
+                }
+            }
+            var jsonData = JSON.stringify(options);
+            var optionData = [];
+            fetch('/results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: jsonData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i] == " ")
+                            optionData.push("");
+                        else
+                            optionData.push(data[i]);
+                    }
+                    var person = $("#person").val();
+                    var background = $("#background").val();
+                    var html = 'masterpiece,anime_bestquality,' + person + 'people in ' + background + ", ";
+                    for (var i = 0; i < person; i++) {
+                        var role = $("#role" + (i+1)).val();  // cnt 대신 (i+1) 사용
+                        var age = $("#age" + (i+1)).val();
+                        var color = $("#color" + (i+1)).val();
+                        var clothes = $("#clothes" + (i+1)).val();
+                        var hair = $("#hair" + (i+1)).val();
+                        var behavior = $("#behavior" + (i+1)).val();
+                        var face = $("#face" + (i+1)).val();
+
+                        if($("#checkbox" + (i+1)).is(":checked")) {
+                            html += "{{"+ age + 'age ' + role + ' wearing ' + color + ' ' + clothes + ' ' + hair + ' ' + behavior + ' ' + face + ' ' + optionData[i] + "}}" +' and ';
+                        }
+
+                        html += age + 'age ' + role + ' wearing ' + color + ' ' + clothes + ' ' + hair + ' ' + behavior + ' ' + face + ' ' + optionData[i] + ' and ';
+                    }
+                    html = html.substring(0, html.length - 4); // 마지막 and 제거
+                    $("#myTextarea").val(html);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+
+        const myTextarea = document.getElementById("myTextarea");
+
+        document.getElementById("myButton").onclick = () => {
+            window.navigator.clipboard.writeText(myTextarea.value).then(() => {
+                alert("복사되었습니다.");
+            });
+        };
+    </script>
+</body>
+
+</html>
